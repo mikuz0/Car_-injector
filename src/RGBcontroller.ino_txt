@@ -1,0 +1,78 @@
+#include <Arduino.h>
+// настройки энкодера
+    #define CLK 6
+    #define DT 8
+    #define SW 7
+    #include "GyverEncoder.h"
+    Encoder enc1(CLK, DT, SW);  // для работы c кнопкой
+// настройки ШИМ
+    #define R 3
+    #define G 9
+    #define B 10  
+ int counter = 150; 
+// настройка ИК пульта
+#define IR_PIN 2           // пин ИК приёмника
+#include "IRLremote.h"
+
+CHashIR IRLremote;
+uint32_t IRdata;
+
+// ----- КНОПКИ ПУЛЬТА -----WavGAT
+#define BUTT_UP     0xF39EEBAD
+#define BUTT_DOWN   0xC089F6AD
+#define BUTT_LEFT   0xE25410AD
+#define BUTT_RIGHT  0x14CE54AD
+#define BUTT_OK     0x297C76AD
+#define BUTT_1      0x4E5BA3AD
+#define BUTT_2      0xE51CA6AD
+#define BUTT_3      0xE207E1AD
+#define BUTT_4      0x517068AD
+#define BUTT_5      0x1B92DDAD
+#define BUTT_6      0xAC2A56AD
+#define BUTT_7      0x5484B6AD
+#define BUTT_8      0xD22353AD
+#define BUTT_9      0xDF3F4BAD
+#define BUTT_0      0xF08A26AD
+#define BUTT_START   0x68E456AD
+#define BUTT_HASH   0x151CD6AD
+// ----- КНОПКИ ПУЛЬТА -----
+
+// функция опроса пульта и изменения настроек
+void remoteTick() {
+  if ( IRLremote.available()) { // если данные пришли
+ auto data = IRLremote.read();
+    IRdata = data.command;
+
+  Serial.println(IRdata, HEX);
+  Serial.println("Next cycle");
+
+}
+}
+
+
+    void setup() {
+    Serial.begin(9600);
+    // старт энкодера
+    enc1.setType(TYPE1);
+      pinMode(R, OUTPUT);
+      pinMode(G, OUTPUT);
+      pinMode(B, OUTPUT); 
+// старт ИК пульта
+      IRLremote.begin(IR_PIN);
+  
+    }
+
+    void loop() {
+    // обязательная функция отработки. Должна постоянно опрашиваться
+    enc1.tick();
+    remoteTick() ; 
+    //delay(10) ;
+    if (enc1.isRight()) counter++;  
+    if (enc1.isLeft()) counter--;
+    if (enc1.isClick())      Serial.println(counter);  
+      analogWrite(R, counter);
+      analogWrite(G, counter);
+      analogWrite(B, counter);
+    }
+
+    
